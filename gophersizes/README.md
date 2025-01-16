@@ -1,0 +1,1 @@
+Folder contains code for exercise projects from https://gophercises.com

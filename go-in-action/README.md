@@ -1,0 +1,1 @@
+Code snippets from the book [Go in action](https://www.oreilly.com/library/view/go-in-action/9781617291784/)
