@@ -1,6 +1,7 @@
 package abs
 
 import (
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
@@ -17,9 +18,7 @@ func TestAbs(t *testing.T) {
 
 	for _, test := range tests { // цикл по всем тестам
 		t.Run(test.name, func(t *testing.T) {
-			if v := Abs(test.value); v != test.expected {
-				t.Errorf("Sum() = %v, expected %v", v, test.expected)
-			}
+			assert.Equal(t, Abs(test.value), test.expected)
 		})
 	}
 }
