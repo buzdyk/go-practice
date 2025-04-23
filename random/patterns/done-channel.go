@@ -1,43 +1,75 @@
 package main
 
-import (
-	"fmt"
-)
+import "fmt"
 
-func generator(numbers []int) <-chan int {
-	out := make(chan int)
+func add(doneCh chan struct{}, inputCh chan int) chan int {
+	addRes := make(chan int)
 
 	go func() {
-		defer close(out)
-		for _, n := range numbers {
-			out <- n
+		defer close(addRes)
+
+		for data := range inputCh {
+			result := data + 1
+
+			select {
+			case <-doneCh:
+				return
+			case addRes <- result:
+			}
 		}
 	}()
-
-	return out
+	return addRes
 }
 
-func square(in <-chan int) <-chan int {
-	out := make(chan int)
+func multiply(doneCh chan struct{}, inputCh chan int) chan int {
+	multiplyRes := make(chan int)
 
 	go func() {
-		defer close(out)
-		for n := range in {
-			out <- n * n
+		defer close(multiplyRes)
+
+		for data := range inputCh {
+			result := data * 2
+
+			select {
+			case <-doneCh:
+				return
+			case multiplyRes <- result:
+			}
 		}
 	}()
 
-	return out
+	return multiplyRes
+}
+
+func generator(doneCh chan struct{}, input []int) chan int {
+	inputCh := make(chan int)
+
+	go func() {
+		defer close(inputCh)
+
+		for _, data := range input {
+			select {
+			case <-doneCh:
+				return
+			case inputCh <- data:
+			}
+		}
+	}()
+
+	return inputCh
 }
 
 func main() {
-	numbers := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
+	input := []int{1, 2, 3, 4, 5, 6, 7, 8}
 
-	// Create pipeline
-	source := generator(numbers)
-	results := square(source)
+	doneCh := make(chan struct{})
+	defer close(doneCh)
 
-	for result := range results {
-		fmt.Println(result)
+	inputCh := generator(doneCh, input)
+
+	resultCh := multiply(doneCh, add(doneCh, inputCh))
+
+	for res := range resultCh {
+		fmt.Println(res)
 	}
 }
